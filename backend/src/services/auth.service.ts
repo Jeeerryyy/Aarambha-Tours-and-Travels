@@ -67,15 +67,27 @@ export class AuthService {
       const isLocked = nextFailed >= 5;
       const lockUntil = isLocked ? new Date(Date.now() + 15 * 60 * 1000) : undefined;
 
-      await (userType === 'admin' ? AdminUser : User).updateOne(
-        { _id: account._id },
-        {
-          $set: {
-            failedLoginAttempts: nextFailed,
-            ...(lockUntil ? { lockUntil } : {}),
-          },
-        }
-      );
+      if (userType === 'admin') {
+        await AdminUser.updateOne(
+          { _id: account._id },
+          {
+            $set: {
+              failedLoginAttempts: nextFailed,
+              ...(lockUntil ? { lockUntil } : {}),
+            },
+          }
+        );
+      } else {
+        await User.updateOne(
+          { _id: account._id },
+          {
+            $set: {
+              failedLoginAttempts: nextFailed,
+              ...(lockUntil ? { lockUntil } : {}),
+            },
+          }
+        );
+      }
 
       await recordAudit({
         actorName: account.name || cleanEmail,
@@ -97,16 +109,29 @@ export class AuthService {
     }
 
     // 6. Reset failed attempts on successful login
-    await (userType === 'admin' ? AdminUser : User).updateOne(
-      { _id: account._id },
-      {
-        $set: {
-          failedLoginAttempts: 0,
-          lastLoginAt: new Date(),
-        },
-        $unset: { lockUntil: 1 },
-      }
-    );
+    if (userType === 'admin') {
+      await AdminUser.updateOne(
+        { _id: account._id },
+        {
+          $set: {
+            failedLoginAttempts: 0,
+            lastLoginAt: new Date(),
+          },
+          $unset: { lockUntil: 1 },
+        }
+      );
+    } else {
+      await User.updateOne(
+        { _id: account._id },
+        {
+          $set: {
+            failedLoginAttempts: 0,
+            lastLoginAt: new Date(),
+          },
+          $unset: { lockUntil: 1 },
+        }
+      );
+    }
 
     // 7. Sign fresh JWT with tokenVersion
     const token = createToken({
