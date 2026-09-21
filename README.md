@@ -32,39 +32,44 @@ Built with an enterprise monorepo architecture, the platform integrates:
 ```mermaid
 flowchart TD
     subgraph Clients["Digital Client Layer"]
-        W[Customer Web App<br/><b>Next.js 14 App Router (:3000)</b>]
-        C[Admin CRM Portal<br/><b>Vite + React 18 + Tailwind (:5173)</b>]
+        W["Customer Web App (Next.js 14 App Router :3000)"]
+        C["Admin CRM Portal (Vite + React 18 + Tailwind :5173)"]
     end
 
     subgraph Gateway["Security & Gateway Layer"]
-        N[CORS & Helmet Policy]
-        RL[Sliding-Window Rate Limiter]
-        CSRF[CSRF Double-Submit Token]
-        XSS[Recursive HTML/Script Sanitizer]
+        N["CORS & Helmet Policy Engine"]
+        RL["Sliding-Window Rate Limiter"]
+        CSRF["CSRF Double-Submit Protection"]
+        XSS["Recursive HTML/Script Sanitizer"]
     end
 
     subgraph API["Backend API Layer (:8000)"]
-        AUTH[Multi-Tier RBAC Auth<br/><i>JWT + Token Version Revocation</i>]
-        FARE[Dynamic Fare Engine<br/><i>Matrix & Tiered Distance</i>]
-        BOOK[Booking & Payment State Machine]
-        INV[PDF Tax Invoice Engine]
-        AUDIT[Security Audit Logger]
+        AUTH["Multi-Tier RBAC Auth & Session Manager"]
+        FARE["Dynamic Fare & Matrix Calculation Engine"]
+        BOOK["Booking & Payment State Machine"]
+        INV["GST PDF Tax Invoice Generator"]
+        AUDIT["Security & Compliance Audit Logger"]
     end
 
-    subgraph Database["Persistence & Cache"]
-        MDB[(MongoDB / In-Memory Engine)]
-        PRISMA[(Prisma / Schema Registry)]
+    subgraph Database["Persistence & Schema Layer"]
+        MDB[("MongoDB / In-Memory Store")]
+        PRISMA[("Prisma Schema Registry")]
     end
 
     W -->|REST / API v1| N
     C -->|REST / API v1| N
-    N --> RL --> CSRF --> XSS
+    N --> RL
+    RL --> CSRF
+    CSRF --> XSS
     XSS --> AUTH
     AUTH --> FARE
     AUTH --> BOOK
     AUTH --> INV
     AUTH --> AUDIT
-    FARE & BOOK & INV & AUDIT --> MDB
+    FARE --> MDB
+    BOOK --> MDB
+    INV --> MDB
+    AUDIT --> MDB
     MDB <--> PRISMA
 ```
 
@@ -85,7 +90,7 @@ flowchart TD
   - `Operations Head`: Dispatch approvals, fleet assignments, booking modifications.
   - `Booking Viewer`: Read-only operational oversight.
 - **Real-Time Fleet Management**: Vehicle availability status, maintenance logs, seating configurations (Urbania, Fortuner, Ertiga, Swift, Luxury Buses).
-- **Inquiry & Lead Pipeline**: Visual status funnels from inbound inquiry $\rightarrow$ quotation $\rightarrow$ deposit $\rightarrow$ confirmed $\rightarrow$ dispatched $\rightarrow$ completed.
+- **Inquiry & Lead Pipeline**: Visual status funnels from inbound inquiry → quotation → deposit → confirmed → dispatched → completed.
 - **Security Audit Logs**: Tamper-evident logging of administrative actions, logins, status mutations, and payment overrides with 90-day automatic retention.
 
 ### 3. 🛡️ Hardened Backend API (`/backend`)
