@@ -1,0 +1,328 @@
+/* Aarambha Brand Design System & Palette Guide */
+@import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Poppins:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Brand Color Tokens (Official Palette) */
+  --color-cloud-ivory: #FCFAF6;
+  --color-sand-cream: #EDE2D0;
+  --color-peach-blush: #E8B9A5;
+  --color-soft-apricot: #F2C6A0;
+  --color-sage-mist: #C8D8C0;
+  --color-warm-taupe: #756B63;
+  --color-cocoa: #493B34;
+  --color-muted-gold: #D8B77A;
+  --color-terracotta: #C65A2E;
+  --color-terracotta-hover: #B24E25;
+
+  /* Global utility mappings */
+  --ramp-primary: #C65A2E;
+  --ramp-navy: #493B34;
+  --ramp-charcoal: #2D1F18;
+  --ramp-cta: #C65A2E;
+  --ramp-cta-hover: #B24E25;
+  --ramp-surface: #FCFAF6;
+  --ramp-surface-subtle: #F8EFEA;
+  --ramp-border: #EDE2D0;
+
+  --radius-btn: 8px;
+  --radius-input: 10px;
+  --radius-card: 14px;
+  --radius-badge: 6px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #EDE2D0 transparent;
+  box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #EDE2D0;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #E8B9A5;
+}
+
+html {
+  scroll-behavior: smooth;
+  text-rendering: optimizeLegibility;
+  background-color: #FCFAF6;
+  color: #493B34;
+}
+
+body {
+  font-family: 'Poppins', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #493B34;
+  background-color: #FCFAF6;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography Hierarchy */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: #493B34;
+  margin: 0;
+}
+
+/* Input Styling */
+.ramp-input {
+  width: 100%;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid #EDE2D0;
+  background-color: #FFFFFF;
+  color: #493B34;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 22px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+}
+
+.ramp-input::placeholder {
+  color: #756B63;
+  opacity: 0.7;
+}
+
+.ramp-input:focus {
+  border-color: #C65A2E;
+  box-shadow: 0 0 0 3px rgba(198, 90, 46, 0.15);
+  background-color: #FFFFFF;
+}
+
+.ramp-input:disabled {
+  background-color: #F8EFEA;
+  color: #756B63;
+  cursor: not-allowed;
+}
+
+/* Primary CTA Button */
+.ramp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background-color: #C65A2E;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(198, 90, 46, 0.2);
+}
+
+.ramp-btn-primary:hover {
+  background-color: #B24E25;
+  box-shadow: 0 4px 12px rgba(198, 90, 46, 0.3);
+}
+
+.ramp-btn-primary:active {
+  background-color: #9E431E;
+  transform: translateY(1px);
+}
+
+/* Secondary Button */
+.ramp-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background-color: #F8EFEA;
+  color: #C65A2E;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #E8B9A5;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ramp-btn-secondary:hover {
+  background-color: #EDE2D0;
+  color: #B24E25;
+}
+
+/* Outline / Ghost Button */
+.ramp-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background-color: #FFFFFF;
+  color: #493B34;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid #EDE2D0;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ramp-btn-outline:hover {
+  background-color: #F8EFEA;
+  border-color: #C65A2E;
+  color: #C65A2E;
+}
+
+/* Enterprise Dark Button */
+.ramp-btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 10px;
+  background-color: #493B34;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.ramp-btn-dark:hover {
+  background-color: #2D1F18;
+}
+
+/* Card */
+.ramp-card {
+  background-color: #FFFFFF;
+  border: 1px solid #EDE2D0;
+  border-radius: 14px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ramp-card:hover {
+  border-color: #E8B9A5;
+  box-shadow: 0 4px 12px rgba(73, 59, 52, 0.06);
+}
+
+/* Featured Card */
+.ramp-card-featured {
+  background-color: #FFFFFF;
+  border: 2px solid #C65A2E;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(198, 90, 46, 0.12);
+}
+
+/* Badges */
+.ramp-badge-yellow {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background-color: #F8EFEA;
+  color: #C65A2E;
+  border: 1px solid #E8B9A5;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.ramp-badge-blue {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background-color: #FCFAF6;
+  color: #493B34;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid #EDE2D0;
+}
+
+.ramp-badge-gray {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background-color: #FCFAF6;
+  color: #756B63;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid #EDE2D0;
+}
+
+/* Legacy mappings */
+.apple-card {
+  background-color: #FFFFFF;
+  border: 1px solid #EDE2D0;
+  border-radius: 14px;
+  box-shadow: none;
+}
+.apple-card:hover {
+  box-shadow: 0 4px 12px rgba(73, 59, 52, 0.06);
+  border-color: #E8B9A5;
+}
+.apple-btn-primary, .btn-red-pill {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background-color: #C65A2E;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.apple-btn-primary:hover, .btn-red-pill:hover {
+  background-color: #B24E25;
+}
+.btn-red-outline {
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  background-color: #FFFFFF;
+  color: #C65A2E;
+  border: 1px solid #EDE2D0;
+  font-size: 13px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-red-outline:hover {
+  background-color: #F8EFEA;
+  border-color: #C65A2E;
+}

@@ -1,0 +1,54 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Build outputs
+dist/
+build/
+.next/
+*.js.map
+*.tsbuildinfo
+
+# ─── ENVIRONMENT & SECRET FILES ──────────────────────────────────────────────
+# These files contain secrets and must NEVER be committed to version control.
+# Use .env.example as a template and populate on each deployment environment.
+.env
+.env.local
+.env.development
+.env.production
+.env.staging
+.env.test
+.env.*.local
+backend/.env
+frontend/website/.env.local
+frontend/website/.env.production
+frontend/crm/.env
+frontend/crm/.env.production
+*.pem
+*.key
+*.p12
+*.pfx
+# ─────────────────────────────────────────────────────────────────────────────
+
+# IDE / OS / Agents
+.vscode/
+.idea/
+.agents/
+.cursor/
+.gemini/
+*.swp
+*.swo
+Thumbs.db
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+logs/
+
+# Test
+coverage/
+.pytest_cache/

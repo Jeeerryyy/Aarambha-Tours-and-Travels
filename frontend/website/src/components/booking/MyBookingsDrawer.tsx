@@ -1,0 +1,293 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { X, Calendar, MapPin, Trash2, CheckCircle2, Car, Compass, ArrowRight, Clock } from 'lucide-react';
+import Link from 'next/link';
+import { apiFetch } from '@/services/api-client';
+
+export interface SavedBooking {
+  id: string;
+  bookingCode?: string;
+  type: 'car' | 'tour';
+  title: string;
+  image: string;
+  startDate: string;
+  endDate: string;
+  guestsCount: number;
+  totalPrice: number;
+  depositPaid: number;
+  depositPrice?: number;
+  utrNumber?: string;
+  paymentStatus?: string;
+  customerName: string;
+  email: string;
+  customerEmail?: string;
+  accountEmail?: string;
+  userEmail?: string;
+  phone: string;
+  status: string;
+  createdAt: string;
+}
+
+interface MyBookingsDrawerProps {
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export default function MyBookingsDrawer({ isOpen, onClose }: MyBookingsDrawerProps) {
+  const [user, setUser] = useState<{ name?: string; email: string } | null>(null);
+  const [bookings, setBookings] = useState<SavedBooking[]>([]);
+
+  const loadUserBookings = async () => {
+    try {
+      const rawUser = localStorage.getItem('aarambha_user');
+      let userEmail = '';
+      if (rawUser) {
+        const parsedUser = JSON.parse(rawUser);
+        setUser(parsedUser);
+        userEmail = (parsedUser.email || '').toLowerCase().trim();
+      }
+
+      const stored = localStorage.getItem('aarambha_user_bookings');
+      let all: any[] = stored ? JSON.parse(stored) : [];
+
+      if (all.length > 0) {
+        try {
+          const codes = all.map(b => b.id || b.bookingCode || b.booking_code).filter(Boolean);
+          const [fleetRes, toursRes] = await Promise.all([
+            apiFetch<any[]>('/api/fleet/bookings/sync-status', {
+              method: 'POST',
+              body: JSON.stringify({ codes, email: userEmail }),
+            }).catch(() => []),
+            apiFetch<any[]>('/api/tours/bookings/sync-status', {
+              method: 'POST',
+              body: JSON.stringify({ codes, email: userEmail }),
+            }).catch(() => []),
+          ]);
+
+          const backendAll = [
+            ...(Array.isArray(fleetRes) ? fleetRes : []),
+            ...(Array.isArray(toursRes) ? toursRes : []),
+          ];
+
+          let changed = false;
+          all = all.map(local => {
+            const match = backendAll.find(b => 
+              (b.bookingCode && b.bookingCode === local.id) ||
+              (b.id && b.id === local.id) ||
+              (b.bookingCode && b.bookingCode === local.bookingCode)
+            );
+            if (match && match.status && match.status !== local.status) {
+              changed = true;
+              return { 
+                ...local, 
+                status: match.status, 
+                rejectionReason: match.rejectionReason, 
+                verifiedAt: match.verifiedAt,
+                utrNumber: match.utrNumber || local.utrNumber
+              };
+            }
+            return local;
+          });
+
+          if (changed) {
+            localStorage.setItem('aarambha_user_bookings', JSON.stringify(all));
+          }
+        } catch (_e) {}
+      }
+
+      if (userEmail) {
+        const userSpecific = all.filter((b) => {
+          const bEmail = (b.customerEmail || b.email || b.accountEmail || b.userEmail || '').toLowerCase().trim();
+          return bEmail === userEmail;
+        });
+        setBookings(userSpecific);
+      } else {
+        setBookings(all);
+      }
+    } catch (err) {
+      console.error('Failed to load saved bookings:', err);
+      setUser(null);
+      setBookings([]);
+    }
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      loadUserBookings();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    window.addEventListener('aarambha_auth_changed', loadUserBookings);
+    return () => window.removeEventListener('aarambha_auth_changed', loadUserBookings);
+  }, []);
+
+  const handleCancelBooking = (bookingId: string) => {
+    try {
+      const raw = localStorage.getItem('aarambha_user_bookings');
+      const all = raw ? JSON.parse(raw) : [];
+      const updated = all.filter((b: any) => b.id !== bookingId && b.bookingCode !== bookingId);
+      localStorage.setItem('aarambha_user_bookings', JSON.stringify(updated));
+      setBookings((prev) => prev.filter((b) => b.id !== bookingId && b.bookingCode !== bookingId));
+    } catch (err) {
+      console.error('Failed to update local storage:', err);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-sm animate-fade-in font-sans">
+      
+      {/* Drawer Body */}
+      <div className="bg-white w-full max-w-md h-full shadow-2xl flex flex-col justify-between relative overflow-hidden border-l border-gray-100">
+        
+        {/* Header */}
+        <div className="p-6 border-b border-[#EDE2D0] flex items-center justify-between bg-[#493B34] text-white">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-[#C65A2E] text-white flex items-center justify-center font-bold text-xs">
+              A
+            </div>
+            <div>
+              <h2 className="font-syne text-lg font-extrabold tracking-tight">My Bookings</h2>
+              <span className="text-[10px] text-[#EDE2D0]/80 block font-medium">
+                {user ? `Account: ${user.email}` : 'Active & Confirmed Reservations'}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Content List */}
+        <div className="flex-1 overflow-y-auto p-6 space-y-4 bg-[#FCFAF6]">
+          {!user ? (
+            <div className="text-center py-16 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-[#C65A2E]/10 text-[#C65A2E] flex items-center justify-center mx-auto">
+                <Compass className="w-8 h-8" />
+              </div>
+              <h3 className="font-syne text-base font-bold text-[#493B34]">Not Logged In</h3>
+              <p className="text-xs text-[#7A6B63] max-w-xs mx-auto">
+                Please log in to your account to view your reservations and invoices.
+              </p>
+              <div className="pt-2">
+                <Link
+                  href="/login"
+                  onClick={onClose}
+                  className="btn-red-pill text-xs font-bold py-2.5 px-6 rounded-full bg-[#C65A2E] hover:bg-[#A84820] text-white text-center inline-block transition-colors"
+                >
+                  Log In to Account
+                </Link>
+              </div>
+            </div>
+          ) : bookings.length === 0 ? (
+            <div className="text-center py-16 space-y-4">
+              <div className="w-16 h-16 rounded-full bg-[#EDE2D0]/50 text-[#493B34]/60 flex items-center justify-center mx-auto">
+                <Compass className="w-8 h-8" />
+              </div>
+              <h3 className="font-syne text-base font-bold text-[#493B34]">No Active Bookings</h3>
+              <p className="text-xs text-[#7A6B63] max-w-xs mx-auto">
+                You haven&apos;t reserved any vehicles or tour packages yet. Lock your departure with just ₹500 deposit!
+              </p>
+              <div className="pt-2 flex flex-col gap-2">
+                <Link
+                  href="/car-rentals/cars"
+                  onClick={onClose}
+                  className="btn-red-pill text-xs font-bold py-2.5 rounded-full bg-[#C65A2E] hover:bg-[#A84820] text-white text-center transition-colors"
+                >
+                  Browse Self-Drive Cars
+                </Link>
+                <Link
+                  href="/tours-travels"
+                  onClick={onClose}
+                  className="text-xs font-bold py-2.5 rounded-full bg-[#493B34] text-white text-center hover:bg-[#3D302A] transition-colors"
+                >
+                  Explore Tour Packages
+                </Link>
+              </div>
+            </div>
+          ) : (
+            bookings.map((booking) => (
+              <div
+                key={booking.id}
+                className="bg-white border border-[#EDE2D0] rounded-2xl p-4 shadow-sm hover:shadow-md transition-shadow space-y-3 relative overflow-hidden"
+              >
+                {/* Header Badge */}
+                <div className="flex items-center justify-between text-xs">
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    booking.type === 'car' ? 'bg-[#C65A2E]/10 text-[#C65A2E] border border-[#C65A2E]/30' : 'bg-[#493B34]/10 text-[#493B34] border border-[#493B34]/20'
+                  }`}>
+                    {booking.type === 'car' ? 'Car Rental' : 'Tour Package'}
+                  </span>
+
+                  <span className="text-[10px] font-bold text-[#7A6B63]">
+                    Ref #{booking.id}
+                  </span>
+                </div>
+
+                {/* Details Row */}
+                <div className="flex items-center gap-3">
+                  <img
+                    src={booking.image}
+                    alt={booking.title}
+                    className="w-16 h-16 rounded-xl object-cover border border-[#EDE2D0] flex-shrink-0"
+                  />
+                  <div className="space-y-0.5 min-w-0">
+                    <h4 className="font-syne text-xs font-bold text-[#493B34] truncate">
+                      {booking.title}
+                    </h4>
+                    <p className="text-[10px] text-[#7A6B63] flex items-center gap-1">
+                      <Calendar className="w-3 h-3 text-[#7A6B63]" /> {booking.startDate} — {booking.endDate}
+                    </p>
+                    <span className="text-[10px] font-bold text-emerald-700 block">
+                      Deposit: ₹{booking.depositPaid?.toLocaleString('en-IN') || booking.depositPrice} {booking.utrNumber ? `(UTR: ${booking.utrNumber})` : ''}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Actions & Dynamic Verification Status */}
+                <div className="pt-2 border-t border-[#EDE2D0] flex items-center justify-between text-xs">
+                  {booking.status === 'pending_verification' || booking.status === 'Pending Verification' ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                      <Clock className="w-3 h-3 text-amber-600" /> Verification Pending
+                    </span>
+                  ) : booking.status === 'Cancelled' || booking.status === 'Rejected' ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-red-700 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">
+                      <X className="w-3 h-3 text-red-600" /> Cancelled
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Confirmed
+                    </span>
+                  )}
+
+                  <button
+                    onClick={() => handleCancelBooking(booking.id)}
+                    className="text-[10px] font-bold text-gray-400 hover:text-red-500 flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <Trash2 className="w-3 h-3" /> Cancel
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Footer */}
+        {bookings.length > 0 && (
+          <div className="p-4 border-t border-[#EDE2D0] bg-[#F7F3EB] text-center text-xs text-[#7A6B63]">
+            Need help with your reservation? Contact support at <strong className="text-[#493B34]">contact@aarambhatravels.in</strong>
+          </div>
+        )}
+
+      </div>
+
+    </div>
+  );
+}
